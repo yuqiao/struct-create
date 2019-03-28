@@ -13,16 +13,18 @@ import (
 )
 
 var defaults = Configuration{
-	DbUser: "db_user",
+	DbUser:     "db_user",
 	DbPassword: "db_pw",
-	DbName: "bd_name",
-	PkgName: "DbStructs",
-	TagLabel: "db",
+	DbName:     "bd_name",
+	PkgName:    "DbStructs",
+	TagLabel:   "db",
 }
 
 var config Configuration
 
 type Configuration struct {
+	DbHost     string `json:"db_host"`
+	DbPort     string `json:"db_port"`
 	DbUser     string `json:"db_user"`
 	DbPassword string `json:"db_password"`
 	DbName     string `json:"db_name"`
@@ -102,7 +104,9 @@ func writeStructs(schemas []ColumnSchema) (int, error) {
 }
 
 func getSchema() []ColumnSchema {
-	conn, err := sql.Open("mysql", config.DbUser+":"+config.DbPassword+"@/information_schema")
+	conn, err := sql.Open("mysql",
+		config.DbUser+":"+config.DbPassword+"@tcp("+config.DbHost+":"+
+			config.DbPort+")/information_schema")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -184,7 +188,7 @@ var configFile = flag.String("json", "", "Config file")
 
 func main() {
 	flag.Parse()
-	
+
 	if len(*configFile) > 0 {
 		f, err := os.Open(*configFile)
 		if err != nil {
